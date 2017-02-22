@@ -1,0 +1,83 @@
+---
+- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- Get docker_app name passed from outer function: "
+  set_fact:
+    docker_app: "{{ item }}"
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Get image version"
+  include: get_image_ver.yml
+
+# TODO: get this working instead of shell module below?
+#- name: "{{ docker_app['name'] }}: 2.2 PULL CONTAINER from registry: {{ docker_image_with_ver }}"
+#  docker_image:
+#    name: "{% if 'app_env' in docker_app %}{% if docker_apps_env in docker_app['app_env'] %}{{ docker_app['docker']['image'] }}:{{ docker_app['app_env'][docker_apps_env]['app_version'] }}{% else %}{{ docker_app['docker']['image'] }}:{{ docker_app['app_env']['prod']['app_version'] }}{% endif %}{% elif  'app_version' in docker_app %}{{ docker_app['docker']['image'] }}:{{ docker_app['app_version'] }}{% endif %}"
+#  register: pull_app
+
+
+#TODO: is there a reason we use shell instead of the docker_image module?
+#      YES... although as of ansible 2.1 we can probably switch to the pull module
+- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: PULL CONTAINER from registry: {{ docker_image_with_ver }}"
+  shell: |
+    {# e.g. { 'app_env': { 'staging': { 'app_version': 'v128' } } } #}
+    {% if 'app_env' in docker_app %} 
+      {% if docker_apps_env in docker_app['app_env'] %}
+      {# e.g. { 'docker_apps_env': 'staging' } #}
+        docker pull "{{ docker_app['docker']['image'] }}:{{ docker_app['app_env'][docker_apps_env]['app_version'] }}"
+      {% else %}
+        echo "Defaulting to prod"
+        echo ""
+        echo "This happens when we're using a 'special' env"
+        echo   "that is not defined for all apps.  "
+        echo ""
+        echo "E.g. prod_disney_beta only defined for one of the 5 apps,"
+        echo "  so all other apps use prod env."
+        docker pull "{{ docker_app['docker']['image'] }}:{{ docker_app['app_env']['prod']['app_version'] }}"
+      {% endif %}
+    {% elif  'app_version' in docker_app %}
+      docker pull "{{ docker_app['docker']['image'] }}:{{ docker_app['app_version'] }}"
+    {% endif %}
+  register: pull_app
+  changed_when: |
+    'Downloaded newer image' in pull_app.stdout
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Init image_changed var"
+  set_fact:
+    image_changed: {}
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Init app_changed to False"
+  set_fact:
+    app_changed: False
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Set app_changed to True if pull changed or external set"
+  set_fact:
+    app_changed: True
+  when: (
+      ( pull_app.changed )
+      or
+      (
+        ( 'externally_changed' in docker_app)
+        and
+        ( docker_app['externally_changed'] )
+      )
+    )
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Add pull_app status to image_changed var"
+  set_fact:
+    # make a json structure
+    image_changed: "{ 
+      '{{ docker_image_with_ver }}': {
+        'changed': {{ app_changed }}
+      }
+    }"
+  when: (
+      ( app_status[docker_image_with_ver] is not defined )
+    )
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Set app_status - add this image status"
+  set_fact:
+    app_status: "{{ app_status | combine(image_changed) }}"
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: debug app_status changes for all images"
+  debug:
+    msg: "{{ app_status }}"
+
+

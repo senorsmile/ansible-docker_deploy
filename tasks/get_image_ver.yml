@@ -1,0 +1,38 @@
+---
+#- name: "{{ docker_app['name'] }}: debug docker_app name"
+#  debug:
+#    msg: "{{ docker_app['name'] }}"
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} Increment docker_app_num"
+  set_fact: 
+    docker_app_num: "{{ (docker_app_num | int) + 1 }}"
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Init container_ver"
+  set_fact:
+    container_ver: ""
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Set container_ver if env is defined for this app"
+  set_fact:
+    container_ver: ":{{ docker_app['app_env'][docker_apps_env]['app_version'] }}"
+  when: 
+    ( 'app_env' in docker_app )
+    and
+    ( docker_apps_env in docker_app['app_env'] )
+      
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Else set container_ver if env is NOT defined for this app"
+  set_fact:
+    container_ver: ":{{ docker_app['app_env']['prod']['app_version'] }}"
+  when: 
+    ( 'app_env' in docker_app )
+    and
+    ( docker_apps_env not in docker_app['app_env'] )
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Else app_version must not have different environments"
+  set_fact:
+    container_ver: ":{{ docker_app['app_version'] }}"
+  when: 
+    ( 'app_version' in docker_app )
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Set docker_image_with_ver"
+  set_fact:
+    docker_image_with_ver: "{{ docker_app['docker']['image'] }}{{ container_ver }}"

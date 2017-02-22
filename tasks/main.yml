@@ -1,0 +1,27 @@
+---
+- name: Debug docker_apps_env
+  debug:
+    msg: "docker_apps_env: {{ docker_apps_env }}"
+
+- set_fact:
+    app_status: {}
+
+- block: 
+  - set_fact:
+      docker_apps_total: "{{ docker_apps | length }}"
+
+  - set_fact:
+      docker_app_num: 0
+
+  - include: docker_pull.yml
+    with_items: "{{ docker_apps }}"
+    tags: docker_pull
+
+  - set_fact:
+      docker_app_num: 0
+
+  - include: docker_start.yml
+    with_items: "{{ docker_apps }}"
+    tags: docker_start
+
+  when: docker_apps is defined
