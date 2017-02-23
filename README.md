@@ -33,6 +33,7 @@
       restart_policy: 'no'   #OPTIONAL
                              #recommended to set to 'no' if state: present
       command: 'run'         #OPTIONAL
+      log_driver: 'syslog'   #OPTIONAL
       expose:                #OPTIONAL
         - 8080
       ports:                 #OPTIONAL
