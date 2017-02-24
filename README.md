@@ -35,6 +35,8 @@
                                #recommended to set to 'no' if state: present
         command: 'run'         #OPTIONAL
         log_driver: 'syslog'   #OPTIONAL
+        log_options:           #OPTIONAL
+          tag: app_name        
         expose:                #OPTIONAL
           - 8080
         ports:                 #OPTIONAL
