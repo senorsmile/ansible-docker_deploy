@@ -25,6 +25,7 @@
           app_version: 'v3'
         prod_dc2:
           app_version: 'v4'
+          image: 'hub.example.com/app_name2' #OPTIONAL, overrides the default image name below
     
       docker:
         image: 'hub.example.com/app_name'
