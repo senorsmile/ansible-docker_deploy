@@ -7,10 +7,15 @@
   set_fact: 
     docker_app_num: "{{ (docker_app_num | int) + 1 }}"
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Init container_ver"
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Init vars"
   set_fact:
     container_ver: ""
+    image_name: "{{ docker_app['docker']['image'] }}"
 
+
+#########
+# set container_ver
+#########
 - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Set container_ver if env is defined for this app"
   set_fact:
     container_ver: ":{{ docker_app['app_env'][docker_apps_env]['app_version'] }}"
@@ -33,6 +38,33 @@
   when: 
     ( 'app_version' in docker_app )
 
+
+
+
+#########
+# set image_name
+#########
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Set image_name if env and image are defined for this app"
+  set_fact:
+    image_name: "{{ docker_app['app_env'][docker_apps_env]['image'] }}"
+  when: 
+    ( 'app_env' in docker_app )
+    and
+    ( docker_apps_env in docker_app['app_env'] )
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Else set image name if env is NOT defined for this app but image is set in prod"
+  set_fact:
+    image_name:    "{{ docker_app['app_env']['prod']['image'] }}"
+  when: 
+    ( 'app_env' in docker_app )
+    and
+    ( docker_apps_env not in docker_app['app_env'] )
+    and
+    ( 'image' in docker_app['app_env']['prod'] )
+
+## else defaults to the image set under the docker key, set as a default at top of this file
+
+
 - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Set docker_image_with_ver"
   set_fact:
-    docker_image_with_ver: "{{ docker_app['docker']['image'] }}{{ container_ver }}"
+    docker_image_with_ver: "{{ image_name }}{{ container_ver }}"
