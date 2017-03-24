@@ -18,23 +18,7 @@
 - name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: PULL CONTAINER from registry: {{ docker_image_with_ver }}"
   shell: |
     {# e.g. { 'app_env': { 'staging': { 'app_version': 'v128' } } } #}
-    {% if 'app_env' in docker_app %} 
-      {% if docker_apps_env in docker_app['app_env'] %}
-      {# e.g. { 'docker_apps_env': 'staging' } #}
-        docker pull "{{ docker_app['docker']['image'] }}:{{ docker_app['app_env'][docker_apps_env]['app_version'] }}"
-      {% else %}
-        echo "Defaulting to prod"
-        echo ""
-        echo "This happens when we're using a 'special' env"
-        echo   "that is not defined for all apps.  "
-        echo ""
-        echo "E.g. prod_disney_beta only defined for one of the 5 apps,"
-        echo "  so all other apps use prod env."
-        docker pull "{{ docker_app['docker']['image'] }}:{{ docker_app['app_env']['prod']['app_version'] }}"
-      {% endif %}
-    {% elif  'app_version' in docker_app %}
-      docker pull "{{ docker_app['docker']['image'] }}:{{ docker_app['app_version'] }}"
-    {% endif %}
+    docker pull "{{ docker_image_with_ver }}"
   register: pull_app
   changed_when: |
     'Downloaded newer image' in pull_app.stdout
