@@ -3,6 +3,10 @@
   debug:
     msg: "docker_apps_env: {{ docker_apps_env }}"
 
+- name: Debug docker_apps
+  debug:
+    msg: "docker_apps: {{ docker_apps }}"
+
 - set_fact:
     app_status: {}
 
