@@ -51,6 +51,8 @@
     ( 'app_env' in docker_app )
     and
     ( docker_apps_env in docker_app['app_env'] )
+    and
+    ( 'image' in docker_app['app_env'][docker_apps_env] )
 
 - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Else set image name if env is NOT defined for this app but image is set in prod"
   set_fact:
