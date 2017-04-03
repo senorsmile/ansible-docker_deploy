@@ -5,7 +5,7 @@
 
 - name: Debug docker_apps
   debug:
-    var: docker_apps 
+    var: docker_apps
 
 - set_fact:
     app_status: {}
