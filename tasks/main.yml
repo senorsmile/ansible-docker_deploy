@@ -2,20 +2,25 @@
 - name: Debug docker_apps_env
   debug:
     var: docker_apps_env
+  tags: [docker_pull,docker_start]
 
 - name: Debug docker_apps
   debug:
     var: docker_apps
+  tags: [docker_pull,docker_start]
 
 - set_fact:
     app_status: {}
+  tags: [docker_pull,docker_start]
 
 - block: 
   - set_fact:
       docker_apps_total: "{{ docker_apps | length }}"
+    tags: docker_pull
 
   - set_fact:
       docker_app_num: 0
+    tags: docker_pull
 
   - include: docker_pull.yml
     with_items: "{{ docker_apps }}"
@@ -23,6 +28,7 @@
 
   - set_fact:
       docker_app_num: 0
+    tags: docker_start
 
   - include: docker_start.yml
     with_items: "{{ docker_apps }}"
