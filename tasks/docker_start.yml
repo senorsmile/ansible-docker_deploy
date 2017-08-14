@@ -29,8 +29,11 @@
     docker inspect --format \{\{.State.Status\}\} {{ docker_app['name'] }}
   register: container_status
 
+## Possibilities as of ansible 2.3.1
+## docker states: [ absent, present, stopped, started ]
+## possible stati: [ created|restarting|running|removing|paused|exited|dead ]
+
 - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: TEST CONTAINER STATUS"
   assert:
-    that: container_status.stdout == "{{ docker_app['docker']['state'] | default('started') }}"
-    msg: >
-      container status: [ {{ container_status.stdout}} ] != desired status: [ {{ docker_app['docker']['state'] | default('started') }} ]
+    that: "container_status.stdout in ({% if docker_app['docker']['state'] is defined %}{% if docker_app['docker']['state'] == 'started' %}'running'{% elif docker_app['docker']['state'] == 'stopped'%}'exited,paused,created'{% endif %}{% else %}'running'{% endif %})"
+    msg: "container status- [ {{ container_status.stdout}} ] != desired status: [ {{ docker_app['docker']['state'] | default('started') }} ]"
