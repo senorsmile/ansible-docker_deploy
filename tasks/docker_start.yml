@@ -1,9 +1,9 @@
 ---
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} Get docker_app name passed from outer function"
+- name: "{{ docker_app_num }}/{{ docker_apps_total}}: START CONTAINER: Get docker_app name passed from outer function"
   set_fact:
     docker_app: "{{ item }}"
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} Get image version: {{ docker_app['name'] }}"
+- name: "{{ docker_app_num }}/{{ docker_apps_total}}: START CONTAINER: Get image version: {{ docker_app['name'] }}"
   include: get_image_ver.yml
 
 - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: START CONTAINER: {{ docker_image_with_ver }}"
@@ -24,3 +24,13 @@
     restart:        "{{ app_status[docker_image_with_ver]['changed'] | default(docker_force_restart) }}"
     pull:           false
 
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: GET CONTAINER STATUS"
+  shell: |
+    docker inspect --format \{\{.State.Status\}\} {{ docker_app['name'] }}
+  register: container_status
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: TEST CONTAINER STATUS"
+  assert:
+    that: container_status.stdout == "{{ docker_app['docker']['state'] | default('started') }}"
+    msg: >
+      container status: [ {{ container_status.stdout}} ] != desired status: [ {{ docker_app['docker']['state'] | default('started') }} ]
