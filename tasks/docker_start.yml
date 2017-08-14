@@ -28,6 +28,7 @@
   shell: |
     docker inspect --format \{\{.State.Status\}\} {{ docker_app['name'] }}
   register: container_status
+  changed_when: False
 
 ## Possibilities as of ansible 2.3.1
 ## docker states: [ absent, present, stopped, started ]
