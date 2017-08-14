@@ -6,35 +6,52 @@
 - name: "{{ docker_app_num }}/{{ docker_apps_total}}: START CONTAINER: Get image version: {{ docker_app['name'] }}"
   include: get_image_ver.yml
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: START CONTAINER: {{ docker_image_with_ver }}"
-  docker_container:
-    name:           "{{ docker_app['name'] }}"
-    image:          "{{ docker_image_with_ver }}"
-    state:          "{{ docker_app['docker']['state']          | default('started') }}"
-    env:            "{{ docker_app['docker']['env']            | default({}) }}"
-    ports:          "{{ docker_app['docker']['ports']          | default(omit) }}"
-    command:        "{{ docker_app['docker']['command']        | default(omit) }}"
-    volumes:        "{{ docker_app['docker']['volumes']        | default(omit) }}"
-    links:          "{{ docker_app['docker']['links']          | default(omit) }}"
-    expose:         "{{ docker_app['docker']['expose']         | default(omit) }}"
-    log_driver:     "{{ docker_app['docker']['log_driver']     | default(omit) }}"
-    log_options:    "{{ docker_app['docker']['log_options']    | default(omit) }}"
-    dns_servers:    "{{ docker_app['docker']['dns_servers']    | default(omit) }}"
-    restart_policy: "{{ docker_app['docker']['restart_policy'] | default('always') }}"
-    restart:        "{{ app_status[docker_image_with_ver]['changed'] | default(docker_force_restart) }}"
-    pull:           false
+- block:
+  #--------------------------
+  # start block
+  #--------------------------
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: GET CONTAINER STATUS"
-  shell: |
-    docker inspect --format \{\{.State.Status\}\} {{ docker_app['name'] }}
-  register: container_status
-  changed_when: False
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: START CONTAINER: {{ docker_image_with_ver }}"
+    docker_container:
+      name:           "{{ docker_app['name'] }}"
+      image:          "{{ docker_image_with_ver }}"
+      state:          "{{ docker_app['docker']['state']          | default('started') }}"
+      env:            "{{ docker_app['docker']['env']            | default({}) }}"
+      ports:          "{{ docker_app['docker']['ports']          | default(omit) }}"
+      command:        "{{ docker_app['docker']['command']        | default(omit) }}"
+      volumes:        "{{ docker_app['docker']['volumes']        | default(omit) }}"
+      links:          "{{ docker_app['docker']['links']          | default(omit) }}"
+      expose:         "{{ docker_app['docker']['expose']         | default(omit) }}"
+      log_driver:     "{{ docker_app['docker']['log_driver']     | default(omit) }}"
+      log_options:    "{{ docker_app['docker']['log_options']    | default(omit) }}"
+      dns_servers:    "{{ docker_app['docker']['dns_servers']    | default(omit) }}"
+      restart_policy: "{{ docker_app['docker']['restart_policy'] | default('always') }}"
+      restart:        "{{ app_status[docker_image_with_ver]['changed'] | default(docker_force_restart) }}"
+      pull:           false
 
-## Possibilities as of ansible 2.3.1
-## docker states: [ absent, present, stopped, started ]
-## possible stati: [ created|restarting|running|removing|paused|exited|dead ]
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: GET CONTAINER STATUS"
+    shell: |
+      docker inspect --format \{\{.State.Status\}\} {{ docker_app['name'] }}
+    register: container_status
+    changed_when: False
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: TEST CONTAINER STATUS"
-  assert:
-    that: "container_status.stdout in ({% if docker_app['docker']['state'] is defined %}{% if docker_app['docker']['state'] == 'started' %}'running'{% elif docker_app['docker']['state'] == 'stopped'%}'exited,paused,created'{% endif %}{% else %}'running'{% endif %})"
-    msg: "container status- [ {{ container_status.stdout}} ] != desired status: [ {{ docker_app['docker']['state'] | default('started') }} ]"
+  ## Possibilities as of ansible 2.3.1
+  ## docker states: [ absent, present, stopped, started ]
+  ## possible stati: [ created|restarting|running|removing|paused|exited|dead ]
+
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: TEST CONTAINER STATUS"
+    assert:
+      that: "container_status.stdout in ({% if docker_app['docker']['state'] is defined %}{% if docker_app['docker']['state'] == 'started' %}'running'{% elif docker_app['docker']['state'] == 'stopped'%}'exited,paused,created'{% endif %}{% else %}'running'{% endif %})"
+      msg: "container status- [ {{ container_status.stdout}} ] != desired status: [ {{ docker_app['docker']['state'] | default('started') }} ]"
+
+
+  #--------------------------
+  # end block
+  #--------------------------
+  when: ( docker_image_with_ver != 'disabled:disabled' )
+
+- name: Skip this image if disabled
+  debug:
+    msg: "{{ docker_app['name'] }} is disabled in the env for this node"
+  when: ( docker_image_with_ver == 'disabled:disabled' )
+

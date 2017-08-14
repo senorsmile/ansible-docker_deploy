@@ -13,55 +13,65 @@
 #  register: pull_app
 
 
-#TODO: is there a reason we use shell instead of the docker_image module?
-#      YES... although as of ansible 2.1 we can probably switch to the pull module
-- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: PULL CONTAINER from registry: {{ docker_image_with_ver }}"
-  shell: |
-    {# e.g. { 'app_env': { 'staging': { 'app_version': 'v128' } } } #}
-    docker pull "{{ docker_image_with_ver }}"
-  register: pull_app
-  changed_when: |
-    'Downloaded newer image' in pull_app.stdout
+- block:
+  #--------------------------
+  # start block
+  #--------------------------
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Init image_changed var"
-  set_fact:
-    image_changed: {}
+  #TODO: is there a reason we use shell instead of the docker_image module?
+  #      YES... although as of ansible 2.1 we can probably switch to the pull module
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: PULL CONTAINER from registry: {{ docker_image_with_ver }}"
+    shell: |
+      {# e.g. { 'app_env': { 'staging': { 'app_version': 'v128' } } } #}
+      docker pull "{{ docker_image_with_ver }}"
+    register: pull_app
+    changed_when: |
+      'Downloaded newer image' in pull_app.stdout
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Init app_changed to False"
-  set_fact:
-    app_changed: False
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Init image_changed var"
+    set_fact:
+      image_changed: {}
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Set app_changed to True if pull changed or external set"
-  set_fact:
-    app_changed: True
-  when: (
-      ( pull_app.changed )
-      or
-      (
-        ( 'externally_changed' in docker_app)
-        and
-        ( docker_app['externally_changed'] )
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Init app_changed to False"
+    set_fact:
+      app_changed: False
+
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Set app_changed to True if pull changed or external set"
+    set_fact:
+      app_changed: True
+    when: (
+        ( pull_app.changed )
+        or
+        (
+          ( 'externally_changed' in docker_app)
+          and
+          ( docker_app['externally_changed'] )
+        )
       )
-    )
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Add pull_app status to image_changed var"
-  set_fact:
-    # make a json structure
-    image_changed: "{ 
-      '{{ docker_image_with_ver }}': {
-        'changed': {{ app_changed }}
-      }
-    }"
-  when: (
-      ( app_status[docker_image_with_ver] is not defined )
-    )
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Add pull_app status to image_changed var"
+    set_fact:
+      # make a json structure
+      image_changed: "{ 
+        '{{ docker_image_with_ver }}': {
+          'changed': {{ app_changed }}
+        }
+      }"
+    when: (
+        ( app_status[docker_image_with_ver] is not defined )
+      )
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Set app_status - add this image status"
-  set_fact:
-    app_status: "{{ app_status | combine(image_changed) }}"
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Set app_status - add this image status"
+    set_fact:
+      app_status: "{{ app_status | combine(image_changed) }}"
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: debug app_status changes for all images"
-  debug:
-    msg: "{{ app_status }}"
+  - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: debug app_status changes for all images"
+    debug:
+      msg: "{{ app_status }}"
+
+  #--------------------------
+  # end block
+  #--------------------------
+  when: ( docker_image_with_ver != 'disabled:disabled' )
 
 
