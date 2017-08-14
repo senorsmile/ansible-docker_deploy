@@ -26,6 +26,11 @@
         prod_dc2:
           app_version: 'v4'
           image: 'hub.example.com/app_name2' #OPTIONAL, overrides the default image name below
+        prod_disabled:
+          ## set both to disabled to disable this container
+          ## for this specific environment
+          app_version: 'disabled'
+          image:       'disabled'  
     
       docker:
         image: 'hub.example.com/app_name'
