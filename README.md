@@ -36,7 +36,7 @@
         image: 'hub.example.com/app_name'
         state: present         #OPTIONAL
                                #DEFAULT: reloaded
-                               #NB: you almost ALWAYS want absent, present or reloaded. Do NOT use started.
+                               #CHOICES: [ absent, present, reloaded, started ]
         restart_policy: 'no'   #OPTIONAL
                                #recommended to set to 'no' if state: present
         command: 'run'         #OPTIONAL

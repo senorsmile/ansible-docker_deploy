@@ -72,6 +72,9 @@
   #--------------------------
   # end block
   #--------------------------
-  when: ( docker_image_with_ver != 'disabled:disabled' )
+  when: 
+    not ( docker_image_with_ver == 'disabled:disabled' )
+    and
+    not ( docker_app['docker']['state'] == 'absent' )
 
 

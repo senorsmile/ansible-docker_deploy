@@ -13,6 +13,21 @@
     image_name: "{{ docker_app['docker']['image'] }}"
 
 
+## explicitly defining the default state is needed, because we have some when: clauses
+## that cannot test whether or not it's defined, but need to know what it is.
+## (e.g. if 'absent' )
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: State defaults to reloaded"
+  set_fact:
+    default_state:
+      docker:
+        state: 'started'
+  when: ( 'state' not in docker_app['docker'] )
+
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: Inject default state"
+  set_fact:
+    docker_app: "{{ docker_app | combine(default_state, recursive=True) }}"
+  when: ( 'state' not in docker_app['docker'] )
+
 #########
 # set container_ver
 #########
