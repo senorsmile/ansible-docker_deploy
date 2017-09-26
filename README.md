@@ -35,7 +35,7 @@
       docker:
         image: 'hub.example.com/app_name'
         state: present         #OPTIONAL
-                               #DEFAULT: reloaded
+                               #DEFAULT: started
                                #CHOICES: [ absent, present, reloaded, started ]
         restart_policy: 'no'   #OPTIONAL
                                #recommended to set to 'no' if state: present

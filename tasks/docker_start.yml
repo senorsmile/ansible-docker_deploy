@@ -24,7 +24,6 @@
         name:           "{{ docker_app['name'] }}"
         image:          "{{ docker_image_with_ver }}"
         state:          "{{ docker_app['docker']['state']          | default('started') }}"
-        env:            "{{ docker_app['docker']['env']            | default({}) }}"
         ports:          "{{ docker_app['docker']['ports']          | default(omit) }}"
         command:        "{{ docker_app['docker']['command']        | default(omit) }}"
         volumes:        "{{ docker_app['docker']['volumes']        | default(omit) }}"
@@ -34,6 +33,7 @@
         log_options:    "{{ docker_app['docker']['log_options']    | default(omit) }}"
         dns_servers:    "{{ docker_app['docker']['dns_servers']    | default(omit) }}"
         restart_policy: "{{ docker_app['docker']['restart_policy'] | default('always') }}"
+        env:            "{{ docker_app['docker']['env']            | default(docker_app['docker']['environment']) | default({}) }}"
         restart:        "{{ app_status[docker_image_with_ver]['changed'] | default(docker_force_restart) }}"
         pull:           false
 
@@ -46,6 +46,10 @@
     ## Possibilities as of ansible 2.3.1
     ## docker states: [ absent, present, stopped, started ]
     ## possible stati: [ created|restarting|running|removing|paused|exited|dead ]
+
+    - name: Pause before testing container status
+      pause:
+        seconds: 4
 
     - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: TEST CONTAINER STATUS"
       assert:
