@@ -6,6 +6,14 @@
 - name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Get image version"
   include: get_image_ver.yml
 
+- name: Get pull_containers var
+  set_fact:
+    pull_containers: "{% if 'pull_containers' in docker_app %}{{ docker_app['pull_containers'] }}{% else %}True{% endif %}"
+
+- name: DEBUG pull_containers var
+  debug:
+    msg: "{{ pull_containers }}"
+
 # TODO: get this working instead of shell module below?
 #- name: "{{ docker_app['name'] }}: 2.2 PULL CONTAINER from registry: {{ docker_image_with_ver }}"
 #  docker_image:
@@ -76,5 +84,7 @@
     not ( docker_image_with_ver == 'disabled:disabled' )
     and
     not ( docker_app['docker']['state'] == 'absent' )
+    and
+    ( pull_containers == True )
 
 
