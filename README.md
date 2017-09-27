@@ -31,7 +31,9 @@
           ## for this specific environment
           app_version: 'disabled'
           image:       'disabled'  
-    
+
+      pull_containers: True    #OPTIONAL: set to false to NOT pull containers
+                               # this assumes that you've manually pulled the images
       docker:
         image: 'hub.example.com/app_name'
         state: present         #OPTIONAL
