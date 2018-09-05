@@ -36,7 +36,7 @@
         restart_policy: "{{ docker_app['docker']['restart_policy'] | default('always') }}"
         env:            "{{ docker_app['docker']['env']            | default(docker_app['docker']['environment']) | default({}) }}"
         restart:        "{{ app_status[docker_image_with_ver]['changed'] | default(docker_force_restart) }}"
-        pull:           false
+        pull:           false # always pull from the docker_pull.yml, NOT here
 
     - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: GET CONTAINER STATUS"
       shell: |
