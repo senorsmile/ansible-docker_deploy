@@ -6,6 +6,16 @@
 - name: "{{ docker_app_num }}/{{ docker_apps_total}}: START CONTAINER: Get image version: {{ docker_app['name'] }}"
   include: get_image_ver.yml
 
+- name: "{{ docker_app_num }}/{{ docker_apps_total}}: START CONTAINER: Set app_status if pull is set to false: {{ docker_app['name'] }}"
+  set_fact:
+    app_status: "{
+        '{{ docker_image_with_ver }}': {
+          'changed': False
+         }
+      }"
+  when: ( app_status[docker_image_with_ver] is not defined )
+
+
 - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: REMOVE CONTAINER"
   docker_container:
     name:   "{{ docker_app['name'] }}"
