@@ -7,7 +7,7 @@
 - name: Debug docker_apps
   debug:
     var: docker_apps
-
+  tags: [docker_pull,docker_start] 
 
 - set_fact:
     app_status: {}
