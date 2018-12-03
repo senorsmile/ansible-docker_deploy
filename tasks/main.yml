@@ -7,13 +7,13 @@
 - name: Debug docker_apps
   debug:
     var: docker_apps
-  tags: [docker_pull,docker_start]
+
 
 - set_fact:
     app_status: {}
   tags: [docker_pull,docker_start]
 
-- block: 
+- block:
   - set_fact:
       docker_apps_total: "{{ docker_apps | length }}"
     tags: docker_pull
@@ -35,3 +35,5 @@
     tags: docker_start
 
   when: docker_apps is defined
+
+- include: docker_network.yml

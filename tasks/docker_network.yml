@@ -1,0 +1,7 @@
+---
+- name: Create a network
+  docker_network:
+    name: "{{ item }}"
+    connected: "{{ item.containers }}"
+  with_items: docker_networks
+  when: docker_networks is defined
