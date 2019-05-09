@@ -34,6 +34,15 @@
     with_items: "{{ docker_apps }}"
     tags: docker_start
 
-  when: docker_apps is defined
+  - include: docker_network.yml
+    tags: docker_network
 
-- include: docker_network.yml
+  - name: Pause before testing container status
+    pause:
+      seconds: 4
+
+  - include: docker_test.yml
+    with_items: "{{ docker_apps }}"
+    tags: docker_test
+
+  when: docker_apps is defined

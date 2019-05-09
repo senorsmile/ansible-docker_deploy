@@ -1,0 +1,30 @@
+---
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: TEST CONTAINER"
+  block:
+  #--------------------------
+  # test block
+  #--------------------------
+    ## Possibilities as of ansible 2.3.1
+    ## docker states: [ absent, present, stopped, started ]
+    ## possible stati: [ created|restarting|running|removing|paused|exited|dead ]
+
+    - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: GET CONTAINER STATUS"
+      shell: |
+        docker inspect --format \{\{.State.Status\}\} {{ docker_app['name'] }}
+      register: container_status
+      changed_when: False
+
+
+    - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: TEST CONTAINER STATUS"
+      assert:
+        that: "container_status.stdout in ({% if docker_app['docker']['state'] is defined %}{% if docker_app['docker']['state'] == 'started' %}'running'{% elif docker_app['docker']['state'] == 'stopped'%}'exited,paused,created'{% elif docker_app['docker']['state'] == 'present'%}'created'{% endif %}{% else %}'running'{% endif %})"
+        msg: "container status- [ {{ container_status.stdout}} ] != desired state: [ {{ docker_app['docker']['state'] | default('started') }} ]"
+
+
+  #--------------------------
+  # end block
+  #--------------------------
+  when:
+    ( docker_image_with_ver != 'disabled:disabled' )
+    and
+    ( docker_app['docker']['state'] != 'absent' )
