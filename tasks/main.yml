@@ -13,7 +13,7 @@
     app_status: {}
   tags: [docker_pull,docker_start]
 
-- block: 
+- block:
   - set_fact:
       docker_apps_total: "{{ docker_apps | length }}"
     tags: docker_pull
@@ -33,5 +33,16 @@
   - include: docker_start.yml
     with_items: "{{ docker_apps }}"
     tags: docker_start
+
+  - include: docker_network.yml
+    tags: docker_network
+
+  - name: Pause before testing container status
+    pause:
+      seconds: 4
+
+  - include: docker_test.yml
+    with_items: "{{ docker_apps }}"
+    tags: docker_test
 
   when: docker_apps is defined

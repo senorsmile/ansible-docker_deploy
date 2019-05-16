@@ -23,7 +23,7 @@
   when: ( docker_app['docker']['state'] == 'absent' )
 
 
-- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: START CONTAINER AND TEST"
+- name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: START CONTAINER"
   block:
   #--------------------------
   # start block
@@ -48,30 +48,10 @@
         restart:        "{{ app_status[docker_image_with_ver]['changed'] | default(docker_force_restart) }}"
         pull:           false # always pull from the docker_pull.yml, NOT here
 
-    - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: GET CONTAINER STATUS"
-      shell: |
-        docker inspect --format \{\{.State.Status\}\} {{ docker_app['name'] }}
-      register: container_status
-      changed_when: False
-
-    ## Possibilities as of ansible 2.3.1
-    ## docker states: [ absent, present, stopped, started ]
-    ## possible stati: [ created|restarting|running|removing|paused|exited|dead ]
-
-    - name: Pause before testing container status
-      pause:
-        seconds: 4
-
-    - name: "{{ docker_app_num }}/{{ docker_apps_total}} {{ docker_app['name'] }}: TEST CONTAINER STATUS"
-      assert:
-        that: "container_status.stdout in ({% if docker_app['docker']['state'] is defined %}{% if docker_app['docker']['state'] == 'started' %}'running'{% elif docker_app['docker']['state'] == 'stopped'%}'exited,paused,created'{% elif docker_app['docker']['state'] == 'present'%}'created'{% endif %}{% else %}'running'{% endif %})"
-        msg: "container status- [ {{ container_status.stdout}} ] != desired state: [ {{ docker_app['docker']['state'] | default('started') }} ]"
-
-
   #--------------------------
   # end block
   #--------------------------
-  when: 
+  when:
     ( docker_image_with_ver != 'disabled:disabled' )
     and
     ( docker_app['docker']['state'] != 'absent' )
@@ -80,4 +60,3 @@
   debug:
     msg: "{{ docker_app['name'] }} is disabled in the env for this node"
   when: ( docker_image_with_ver == 'disabled:disabled' )
-
