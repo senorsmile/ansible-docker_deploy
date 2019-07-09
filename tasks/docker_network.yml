@@ -2,6 +2,9 @@
 - name: Create a network
   docker_network:
     name: "{{ item.name }}"
+    driver: "{{ item.driver | default('bridge') }}"
+    driver_options: "{{ item.driver_options | default('omit') }}"
+    internal: "{{ item.internal | deffault('no') }}"
     connected: "{{ item.containers }}"
   loop: "{{ docker_networks }}"
   when: docker_networks is defined
