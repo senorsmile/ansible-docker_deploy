@@ -30,11 +30,16 @@
       docker_app_num: 0
     tags: docker_start
 
+  - include: docker_network.yml
+    when: docker_networks.containers is not defined
+    tags: docker_network
+
   - include: docker_start.yml
     with_items: "{{ docker_apps }}"
     tags: docker_start
 
   - include: docker_network.yml
+    when: docker_networks.containers is defined
     tags: docker_network
 
   - name: Pause before testing container status
