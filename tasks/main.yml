@@ -31,7 +31,7 @@
     tags: docker_start
 
   - include: docker_network.yml
-    when: docker_networks.containers is not defined
+    when: docker_networks | selectattr('containers', 'undefined')
     tags: docker_network
 
   - include: docker_start.yml
@@ -39,7 +39,7 @@
     tags: docker_start
 
   - include: docker_network.yml
-    when: docker_networks.containers is defined
+    when: docker_networks | selectattr('containers', 'defined')
     tags: docker_network
 
   - name: Pause before testing container status
