@@ -45,8 +45,17 @@
         user:           "{{ docker_app['docker']['user']           | default(omit) }}"
         capabilities:   "{{ docker_app['docker']['capabilities']   | default(omit) }}"
         cap_drop:       "{{ docker_app['docker']['cap_drop']       | default(omit) }}"
+        volumes_from:   "{{docker_app['docker']['volumes_from']    | default(omit) }}"
+        volume_driver:  "{{docker_app['docker']['volume_driver']   | default(omit) }}"
+        tty:            "{{ docker_app['docker']['tty']            | default(omit) }}"
+        privileged:     "{{ docker_app['docker']['privileged']     | default(omit) }}"
+        
+        # You will want your container connected directly to the host 
+        # OR to a named docker network, not both
         networks:       "{{ docker_app['docker']['networks']       | default(omit) }}"
-        networks_cli_compatible:        "{{ docker_app['docker']['networks_cli']      | default(omit) }}"
+        network_mode:   "{{ docker_app['docker']['network_mode']   | default(omit) }}"
+        networks_cli_compatible: "{{ docker_app['docker']['networks_cli']      | default(omit) }}"
+        
         restart_policy: "{{ docker_app['docker']['restart_policy'] | default('always') }}"
         env:            "{{ docker_app['docker']['env']            | default(docker_app['docker']['environment']) | default({}) }}"
         restart:        "{{ app_status[docker_image_with_ver]['changed'] | default(docker_force_restart) }}"
