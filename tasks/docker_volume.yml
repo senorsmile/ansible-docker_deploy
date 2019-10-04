@@ -1,0 +1,8 @@
+---
+- name: Ensure necessary docker volumes are present
+  docker_volume:
+    volume_name: "{{ item.name }}"
+    driver: "{{ item.driver | default('local') }}"
+    driver_options: "{{ item.driver_options | default(omit) }}"
+  loop: "{{ docker_volumes }}"
+  when: docker_volumes is defined

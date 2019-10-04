@@ -46,6 +46,11 @@
       - docker_networks.0.containers is defined
     tags: docker_network
 
+  - include: docker_volume.yml
+    when:
+      - docker_volumes is defined
+    tags: docker_volume
+
   - name: Pause before testing container status
     pause:
       seconds: 4

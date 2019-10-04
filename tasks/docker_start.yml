@@ -49,9 +49,9 @@
         volume_driver:  "{{docker_app['docker']['volume_driver']   | default(omit) }}"
         tty:            "{{ docker_app['docker']['tty']            | default(omit) }}"
         privileged:     "{{ docker_app['docker']['privileged']     | default(omit) }}"
-        
+
         # You will want your container connected directly to the host 
-        # OR to a named docker network, not both
+        # OR to a named docker network, *probably* not both
         networks:       "{{ docker_app['docker']['networks']       | default(omit) }}"
         network_mode:   "{{ docker_app['docker']['network_mode']   | default(omit) }}"
         networks_cli_compatible: "{{ docker_app['docker']['networks_cli']      | default(omit) }}"
