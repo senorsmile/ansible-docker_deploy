@@ -41,6 +41,7 @@
                                #CHOICES: [ absent, present, reloaded, started ]
         restart_policy: 'no'   #OPTIONAL
                                #recommended to set to 'no' if state: present
+                               #CHOICES: [ "no", "on-failure", "always", "unless-stopped" ]
         command: 'run'         #OPTIONAL
         log_driver: 'syslog'   #OPTIONAL
         log_options:           #OPTIONAL
