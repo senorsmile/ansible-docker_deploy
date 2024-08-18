@@ -4,7 +4,7 @@
     docker_app: "{{ item }}"
 
 - name: "{{ docker_app_num }}/{{ docker_apps_total}}-Pull- {{ docker_app['name'] }}: Get image version"
-  include: get_image_ver.yml
+  include_tasks: get_image_ver.yml
 
 - name: Get pull_containers var
   set_fact:
